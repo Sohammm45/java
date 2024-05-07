@@ -1,0 +1,59 @@
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+public interface PalindromeChecker extends Remote {
+    boolean isPalindrome(String str) throws RemoteException;
+}
+
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class PalindromeCheckerImpl extends UnicastRemoteObject implements PalindromeChecker {
+    protected PalindromeCheckerImpl() throws RemoteException {
+        super();
+    }
+
+    @Override
+    public boolean isPalindrome(String str) throws RemoteException {
+        String reversedStr = new StringBuilder(str).reverse().toString();
+        return str.equals(reversedStr);
+    }
+
+    public static void main(String[] args) {
+        try {
+            PalindromeCheckerImpl palindromeChecker = new PalindromeCheckerImpl();
+            java.rmi.registry.LocateRegistry.createRegistry(1098);
+            java.rmi.registry.Registry registry = java.rmi.registry.LocateRegistry.getRegistry();
+            registry.rebind("PalindromeChecker", palindromeChecker);
+            System.out.println("PalindromeChecker server ready.");
+        } catch (Exception e) {
+            System.err.println("PalindromeChecker server exception: " + e.toString());
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+public class PalindromeClient {
+    public static void main(String[] args) {
+        try {
+            Registry registry = LocateRegistry.getRegistry(null);
+            PalindromeChecker checker = (PalindromeChecker) registry.lookup("PalindromeChecker");
+            String testString = "madam";
+            boolean isPalindrome = checker.isPalindrome(testString);
+            if (isPalindrome) {
+                System.out.println(testString + " is a palindrome.");
+            } else {
+                System.out.println(testString + " is not a palindrome.");
+            }
+        } catch (Exception e) {
+            System.err.println("PalindromeChecker client exception: " + e.toString());
+            e.printStackTrace();
+        }
+    }
+}

@@ -1,0 +1,65 @@
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+public interface FactorialInterface extends Remote {
+    long factorial(int n) throws RemoteException;
+}
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class FactorialImpl extends UnicastRemoteObject implements FactorialInterface {
+    protected FactorialImpl() throws RemoteException {
+        super();
+    }
+
+    @Override
+    public long factorial(int n) throws RemoteException {
+        if (n < 0) {
+            throw new RemoteException("Factorial of a negative number is undefined");
+        }
+        if (n == 0 || n == 1) {
+            return 1;
+        }
+        return n * factorial(n - 1);
+    }
+}
+
+
+import java.rmi.Naming;
+import java.rmi.registry.LocateRegistry;
+
+public class FactorialServer implements FactorialInterface {
+    public static void main(String[] args) {
+        try {
+            
+            FactorialImpl obj = new FactorialImpl();
+            Naming.rebind("Factorial", obj); // Bind the remote object to the name "Factorial"
+            System.out.println("Factorial server is ready.");
+        } catch (Exception e) {
+            System.err.println("Factorial server exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
+
+import java.rmi.Naming;
+import java.util.*;
+
+public class FactorialClient {
+    public static void main(String[] args) {
+        try {
+            FactorialInterface obj = (FactorialInterface) Naming.lookup("rmi://localhost/Factorial");
+            Scanner sc=new Scanner(System.in);
+            System.out.println("Eneter a number");
+            int n=sc.nextInt();
+            
+             // Number to find factorial
+            long result = obj.factorial(n);
+            System.out.println("Factorial of " + n + " is " + result);
+        } catch (Exception e) {
+            System.err.println("FactorialClient exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
