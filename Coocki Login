@@ -1,0 +1,72 @@
+@WebServlet("/login")
+public class LoginServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        
+        if (username.equals("your_username") && password.equals("your_password")) {
+            // Create a cookie
+            Cookie loginCookie = new Cookie("user", "loggedIn");
+            loginCookie.setMaxAge(30 * 60); // Cookie expires in 30 minutes
+            response.addCookie(loginCookie);
+            response.sendRedirect("welcome.jsp");
+        } else {
+            response.sendRedirect("login.jsp");
+        }
+    }
+}
+
+
+@WebServlet("/logout")
+public class LogoutServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Invalidate the session if exists
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        // Delete the cookie by setting its maximum age to 0
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("user")) {
+                    cookie.setMaxAge(0);
+                    response.addCookie(cookie);
+                    break;
+                }
+            }
+        }
+        response.sendRedirect("login.jsp");
+    }
+}
+
+JSP FILES:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+</head>
+<body>
+    <h2>Login Page</h2>
+    <form action="login" method="post">
+        Username: <input type="text" name="username"><br>
+        Password: <input type="password" name="password"><br>
+        <input type="submit" value="Login">
+    </form>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome Page</title>
+</head>
+<body>
+    <h2>Welcome Page</h2>
+    <p>You are logged in!</p>
+    <form action="logout" method="get">
+        <input type="submit" value="Logout">
+    </form>
+</body>
+</html>
